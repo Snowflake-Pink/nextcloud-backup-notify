@@ -50,7 +50,7 @@ docker-compose up -d
 要手动测试通知是否正常工作，可以执行：
 
 ```bash
-docker exec nextcloud-backup-notify python /app/backup_notify.py
+docker exec nextcloud-backup-monitor /usr/local/bin/python /app/monitor.py
 ```
 
 ## 自定义
@@ -59,7 +59,7 @@ docker exec nextcloud-backup-notify python /app/backup_notify.py
 
 ```dockerfile
 # 默认为每天早上 5 点运行
-echo "0 5 * * * cd /app && python /app/backup_notify.py >> /var/log/cron.log 2>&1"
+echo "0 5 * * * /usr/local/bin/python /app/monitor.py >> /var/log/cron.log 2>&1"
 ```
 
 ## 故障排除
