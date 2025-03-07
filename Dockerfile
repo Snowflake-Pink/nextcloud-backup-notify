@@ -19,8 +19,8 @@ RUN pip install --no-cache-dir -r requirements.txt && \
     chmod +x /app/entrypoint.sh && \
     chmod +x /app/monitor.py
 
-# 设置定时任务，每天5:00执行
-RUN echo "0 5 * * * python /app/monitor.py >> /var/log/cron.log 2>&1" > /etc/cron.d/backup-check && \
+# 修复：使用python的完整路径
+RUN echo "0 5 * * * /usr/local/bin/python /app/monitor.py >> /var/log/cron.log 2>&1" > /etc/cron.d/backup-check && \
     chmod 0644 /etc/cron.d/backup-check && \
     crontab /etc/cron.d/backup-check && \
     touch /var/log/cron.log

@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   backup-monitor:
     build:
@@ -10,12 +8,6 @@ services:
       - PUSHPLUS_TOKEN=${PUSHPLUS_TOKEN}
       - PUSHPLUS_TOPIC=${PUSHPLUS_TOPIC}
       - DOCKER_CONTAINER=${DOCKER_CONTAINER}
-      - RUN_ON_START=false
+      - RUN_ON_START=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - nextcloud-aio-network
-
-networks:
-  nextcloud-aio-network:
-    external: true 

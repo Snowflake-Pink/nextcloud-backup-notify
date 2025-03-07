@@ -6,7 +6,7 @@ import json
 import requests
 import docker
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -28,6 +28,25 @@ def get_container_logs():
     except Exception as e:
         print(f"获取容器日志失败: {e}")
         return None
+
+def convert_utc_to_beijing(time_str):
+    """将UTC时间字符串转换为北京时间"""
+    try:
+        # 尝试解析不同格式的时间字符串
+        for fmt in ["%a, %Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"]:
+            try:
+                dt = datetime.strptime(time_str.strip(), fmt)
+                # 添加UTC+8小时得到北京时间
+                beijing_time = dt + timedelta(hours=8)
+                return beijing_time.strftime("%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                continue
+        
+        # 如果无法解析，返回原始字符串
+        return f"{time_str} (原始时间)"
+    except Exception as e:
+        print(f"时间转换错误: {e}")
+        return f"{time_str} (转换失败)"
 
 def parse_backup_info(logs):
     """解析备份日志中的关键信息"""
@@ -53,14 +72,16 @@ def parse_backup_info(logs):
         if archive_match:
             result["archive_name"] = archive_match.group(1)
         
-        # 提取时间信息
+        # 提取时间信息并转换为北京时间
         start_time_match = re.search(r'Time \(start\): ([^\n]+)', logs)
         if start_time_match:
-            result["start_time"] = start_time_match.group(1)
+            utc_time = start_time_match.group(1)
+            result["start_time"] = f"{convert_utc_to_beijing(utc_time)} (北京时间)"
             
         end_time_match = re.search(r'Time \(end\): ([^\n]+)', logs)
         if end_time_match:
-            result["end_time"] = end_time_match.group(1)
+            utc_time = end_time_match.group(1)
+            result["end_time"] = f"{convert_utc_to_beijing(utc_time)} (北京时间)"
             
         duration_match = re.search(r'Duration: ([^\n]+)', logs)
         if duration_match:
