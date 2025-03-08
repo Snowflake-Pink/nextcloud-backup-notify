@@ -19,8 +19,14 @@ RUN pip install --no-cache-dir -r requirements.txt && \
     chmod +x /app/entrypoint.sh && \
     chmod +x /app/monitor.py
 
-# 修复：使用python的完整路径
-RUN echo "0 5 * * * /usr/local/bin/python /app/monitor.py >> /var/log/cron.log 2>&1" > /etc/cron.d/backup-check && \
+# 修改：创建一个包装脚本来执行monitor.py，确保环境变量可用
+RUN echo '#!/bin/bash\n\
+source /app/.env.sh\n\
+/usr/local/bin/python /app/monitor.py "$@"\n' > /app/run_monitor.sh && \
+    chmod +x /app/run_monitor.sh
+
+# 修改cron任务，使用包装脚本
+RUN echo "0 5 * * * /app/run_monitor.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/backup-check && \
     chmod 0644 /etc/cron.d/backup-check && \
     crontab /etc/cron.d/backup-check && \
     touch /var/log/cron.log

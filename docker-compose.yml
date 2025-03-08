@@ -2,7 +2,7 @@ services:
   backup-monitor:
     build:
       context: .
-    container_name: nextcloud-backup-monitor
+    container_name: nextcloud-backup-notify
     restart: unless-stopped
     environment:
       - PUSHPLUS_TOKEN=${PUSHPLUS_TOKEN}

@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# 导出环境变量到文件，供cron任务使用
+env | grep -E 'PUSHPLUS_TOKEN|PUSHPLUS_TOPIC|DOCKER_CONTAINER' > /app/.env.sh
+echo 'export PATH=$PATH:/usr/local/bin' >> /app/.env.sh
+chmod +x /app/.env.sh
+
 # 启动cron服务
 cron
 

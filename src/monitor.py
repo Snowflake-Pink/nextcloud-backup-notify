@@ -8,15 +8,38 @@ import docker
 import re
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import sys
 
-# 加载环境变量
+# 加载环境变量 - 尝试多种加载方式
+# 1. 首先尝试从.env文件加载
 load_dotenv()
+
+# 2. 如果存在外部导出的环境变量文件，也尝试加载它
+env_file_path = '/app/.env.sh'
+if os.path.exists(env_file_path):
+    with open(env_file_path, 'r') as f:
+        for line in f:
+            if '=' in line:
+                key, value = line.strip().split('=', 1)
+                # 只设置尚未设置的环境变量
+                if not os.environ.get(key):
+                    os.environ[key] = value
 
 # 配置
 PUSHPLUS_TOKEN = os.getenv('PUSHPLUS_TOKEN')
 PUSHPLUS_TOPIC = os.getenv('PUSHPLUS_TOPIC')
 CONTAINER_NAME = os.getenv('DOCKER_CONTAINER', 'nextcloud-aio-borgbackup')
 PUSHPLUS_URL = 'https://www.pushplus.plus/send'
+
+# 环境变量检查
+if not PUSHPLUS_TOKEN:
+    print("错误: 未设置PUSHPLUS_TOKEN环境变量")
+    # 记录环境变量调试信息
+    print("当前环境变量:")
+    for key, value in os.environ.items():
+        if key in ['PUSHPLUS_TOKEN', 'PUSHPLUS_TOPIC', 'DOCKER_CONTAINER']:
+            print(f"{key}: {'已设置' if value else '未设置'}")
+    sys.exit(1)
 
 def get_container_logs():
     """获取指定容器的日志"""
@@ -228,11 +251,6 @@ def send_notification(title, content):
 def main():
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{current_time}] 开始检查 {CONTAINER_NAME} 容器的备份状态...")
-    
-    # 检查必要的环境变量
-    if not PUSHPLUS_TOKEN:
-        print("错误: 未设置PUSHPLUS_TOKEN环境变量")
-        return
     
     # 获取日志
     logs = get_container_logs()
